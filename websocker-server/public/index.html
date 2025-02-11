@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sensor Dashboard</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      h1 {
+        text-align: center;
+      }
+      #sensorData {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .data-item {
+        margin: 10px 0;
+        font-size: 1.2em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Sensor Dashboard</h1>
+    <div id="sensorData">
+      <div class="data-item" id="tof">ToF: -- mm</div>
+      <div class="data-item" id="sonar">Sonar: -- cm</div>
+      <div class="data-item" id="gyro">Gyroscope: --</div>
+      <div class="data-item" id="accel">Accelerometer: --</div>
+      <div class="data-item" id="channels">Channels: --</div>
+    </div>
+
+    <script>
+      const ws = new WebSocket(`ws://${window.location.host}`);
+
+      ws.onmessage = (event) => {
+        try {
+          // Parse the incoming JSON string
+          const data = JSON.parse(event.data);
+
+          // Update the dashboard
+          document.getElementById("tof").textContent = `ToF: ${data.tof} mm`;
+          document.getElementById(
+            "sonar"
+          ).textContent = `Sonar: ${data.sonar} cm`;
+
+          const gyroText = `Gyroscope: x=${data.gyro.x}, y=${data.gyro.y}, z=${data.gyro.z}`;
+          document.getElementById("gyro").textContent = gyroText;
+
+          const accelText = `Accelerometer: x=${data.accel.x}, y=${data.accel.y}, z=${data.accel.z}`;
+          document.getElementById("accel").textContent = accelText;
+
+          const channelsText = `Channels: ch1=${data.channels.ch1}, ch2=${data.channels.ch2}, ch3=${data.channels.ch3}, ch4=${data.channels.ch4}`;
+          document.getElementById("channels").textContent = channelsText;
+        } catch (err) {
+          console.error("Error parsing WebSocket message:", err.message);
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+
+      ws.onclose = () => {
+        console.warn("WebSocket connection closed");
+      };
+    </script>
+  </body>
+</html>
